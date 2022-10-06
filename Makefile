@@ -3,7 +3,7 @@
 all: npshell
 
 npshell: npshell.cpp
-	g++ npshell.cpp -o npshell -fconcepts
+	g++ npshell.cpp -o npshell -fconcepts -std=c++2a
 
 command:
 	$(foreach file, $(wildcard command/*.cpp), g++ -c $(file) -o bin/$(basename $(basename file) .cpp);)
