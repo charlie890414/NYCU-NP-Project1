@@ -2,4 +2,6 @@
 
 bin/
 
+*.o
+
 npshell
