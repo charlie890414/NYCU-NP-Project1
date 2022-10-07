@@ -3,8 +3,9 @@
 all: npshell
 
 npshell: npshell.cpp
-	g++ npshell.cpp -o npshell -fconcepts -std=c++2a
+	g++ npshell.cpp -o npshell -std=c++2a
 
 command:
-	$(foreach file, $(wildcard command/*.cpp), g++ -c $(file) -o bin/$(basename $(basename file) .cpp);)
+	mkdir -p bin
+	$(foreach file, $(wildcard command/*.cpp), g++ -c $(file) -o bin/$(basename $(notdir $(file)) .cpp);)
 	cp /bin/ls /bin/cat bin/
