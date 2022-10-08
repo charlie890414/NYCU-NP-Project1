@@ -10,5 +10,5 @@ npshell: npshell.cpp
 
 command:
 	mkdir -p bin
-	$(foreach file, $(wildcard command/*.cpp), g++ -c $(file) -o bin/$(basename $(notdir $(file)));)
+	$(foreach file, $(wildcard command/*.cpp), g++ $(file) -o bin/$(basename $(notdir $(file)));)
 	cp /bin/ls /bin/cat bin/
