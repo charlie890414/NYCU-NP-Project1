@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <map>
 
 using namespace std;
@@ -8,8 +9,6 @@ using namespace std;
 class Enviroment;
 
 void setenv(string var, string value);
-
-char** getenv();
 
 void printenv(string var);
 

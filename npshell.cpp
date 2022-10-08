@@ -4,6 +4,7 @@
 #include <regex>
 #include <map>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "lib/builditin.h"
 #include "lib/stringUtil.h"
@@ -11,7 +12,6 @@
 #include "lib/helper.h"
 
 using namespace std;
-
 int main() {
     string cmdsStr;
     while (getCommand(cmdsStr)) {
@@ -47,8 +47,14 @@ int main() {
                     /* child process */
                     dup2(pfd[1], STDOUT_FILENO);
                     close(pfd[0]);
-                    char * const envp[] = {(char *)"PATH=bin:.", NULL};
-                    if (execvpe(cmd[0].c_str(), NULL, envp) == -1){
+                    clearenv();
+                    putenv((char * )"PATH=bin:.");
+                    char *
+                        const envp[] = {
+                            const_cast < char * > (cmd[0].c_str()),
+                            NULL
+                        };
+                    if (execvp(cmd[0].c_str(), envp) == -1) {
                         cerr << "Unknown command: [" << cmd[0] << "]." << endl;
                     }
                     exit(0);
