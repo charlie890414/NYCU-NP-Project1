@@ -5,32 +5,14 @@
 #include <map>
 #include <unistd.h>
 
+#include "lib/builditin.h"
 #include "lib/stringUtil.h"
 #include "lib/systemUtil.h"
 #include "lib/helper.h"
 
 using namespace std;
 
-map<string, string> envp;
-
-void setenv(string var, string value)
-{
-    envp.insert(pair<string, string>(var, value));
-}
-
-void printenv(string var)
-{
-    if (envp.contains(var))
-        cout << envp[var] << endl;
-}
-
-void exit()
-{
-    exit(0);
-}
-
 int main() {
-    envp.insert(pair < string, string > ("PATH", "bin:."));
     string cmdsStr;
     while (getCommand(cmdsStr)) {
         vector < string > cmds = splitStr(cmdsStr, "\\s+\\|\\s+");
@@ -65,8 +47,8 @@ int main() {
                     /* child process */
                     dup2(pfd[1], STDOUT_FILENO);
                     close(pfd[0]);
-
-                    if (execlp(cmd[0].c_str(), cmd[0].c_str(), NULL) == -1){
+                    char * const envp[] = {(char *)"PATH=bin:.", NULL};
+                    if (execvpe(cmd[0].c_str(), NULL, envp) == -1){
                         cerr << "Unknown command: [" << cmd[0] << "]." << endl;
                     }
                     exit(0);

@@ -1,6 +1,6 @@
 .PHONY: command
 
-OBJ_FILE = lib/stringUtil.o lib/systemUtil.o lib/helper.o
+OBJ_FILE = lib/stringUtil.o lib/systemUtil.o lib/helper.o lib/builditin.o
 
 all: npshell
 
