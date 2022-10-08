@@ -1,6 +1,6 @@
 .PHONY: command
 
-OBJ_FILE = lib/stringUtil.o lib/systemUtil.o lib/helper.o lib/builditin.o
+OBJ_FILE = lib/stringUtil.o lib/systemUtil.o lib/helper.o
 
 all: npshell
 
@@ -10,5 +10,5 @@ npshell: npshell.cpp
 
 command:
 	mkdir -p bin
-	$(foreach file, $(wildcard command/*.cpp), g++ $(file) -o bin/$(basename $(notdir $(file)));)
+	$(foreach file, $(wildcard command/*.cpp), g++ $(file) -o bin/$(basename $(notdir $(file))) -std=c++2a;)
 	cp /bin/ls /bin/cat bin/

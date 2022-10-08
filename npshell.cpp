@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include "lib/builditin.h"
 #include "lib/stringUtil.h"
 #include "lib/systemUtil.h"
 #include "lib/helper.h"
@@ -19,9 +18,17 @@ int main() {
         vector < smatch > pipes = matchStr(cmdsStr, "\\|");
         // printIter(cmds);
         // printIter(pipes);
-        for (string cmdStr: cmds) {
+
+        vector<int[2]> pfds(1);
+        for(int* pfd: pfds)
+            if (pipe(pfd) < 0)
+                return -1;
+
+        for (int i = 0; i < cmds.size(); i++) {
+            string cmdStr = cmds[i];
             vector < string > cmd = splitStr(cmdStr, "\\s+");
             // printIter(cmd);
+
             if (cmd[0] == "exit")
                 exit();
             else if (cmd[0] == "setenv")
@@ -29,15 +36,8 @@ int main() {
             else if (cmd[0] == "printenv")
                 printenv(cmd[1]);
             else {
-                char buffer[1024] = {
-                    0
-                };
-                int len;
-                int pfd[2];
-                int status;
                 pid_t pid;
-                if (pipe(pfd) < 0)
-                    return -1;
+                int status;
 
                 pid = fork();
                 if (pid < 0) {
@@ -45,29 +45,28 @@ int main() {
                     return 0;
                 } else if (pid == 0) {
                     /* child process */
-                    dup2(pfd[1], STDOUT_FILENO);
-                    close(pfd[0]);
-                    clearenv();
-                    putenv((char * )"PATH=bin:.");
-                    char *
-                        const envp[] = {
-                            const_cast < char * > (cmd[0].c_str()),
-                            NULL
-                        };
-                    if (execvp(cmd[0].c_str(), envp) == -1) {
-                        cerr << "Unknown command: [" << cmd[0] << "]." << endl;
+                    if (i != pipes.size()){
+                        close(pfds[i][0]);
+                        dup2(pfds[i][1], STDOUT_FILENO);
                     }
-                    exit(0);
+                    if (i != 0){
+                        dup2(pfds[i-1][0], STDIN_FILENO);
+                        close(pfds[i-1][1]);
+                    }
+
+                    execute(cmd);
                 } else {
                     /* parent process */
-                    close(pfd[1]);
-
-                    while ((len = read(pfd[0], buffer, 1023)) > 0) {
-                        buffer[len] = '\0';
-                        printf("%s", buffer);
+                    if(i == cmds.size() - 1)
+                        waitpid(pid, &status, 0);
+                    
+                    // not sure but work
+                    if (i != pipes.size()){
+                        close(pfds[i][1]);
                     }
-
-                    waitpid((pid_t) pid, & status, 0);
+                    if (i != 0){
+                        close(pfds[i-1][0]);
+                    }
                 }
             }
         }
