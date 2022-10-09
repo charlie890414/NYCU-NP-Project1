@@ -6,7 +6,7 @@ map<string, string> envp = {{"PATH", "bin:."}};
 
 void setenv(string var, string value)
 {
-    envp.insert(pair<string, string>(var, value));
+    envp[var] = value;
 }
 
 #if !__linux__
@@ -38,8 +38,12 @@ void printenv(string var)
 
 istream& getCommand(string &cmdStr)
 {
-    cout << "% ";
-    return getline(cin, cmdStr);
+    if (isatty(fileno(stdin)))
+        cout << "% ";
+    istream& ret = getline(cin, cmdStr);
+    if (isatty(fileno(stdin)) && !ret)
+        cout << endl;
+    return ret;
 }
 
 void execute(vector<string> cmd){
