@@ -22,7 +22,7 @@ int main() {
         vector < string > cmds = splitStr(cmdsStr, "\\s+(\\!\\d+)|(\\|\\d+)|(\\|)\\s+");
         vector < smatch > pipes = matchStr(cmdsStr, "(\\!\\d+)|(\\|\\d+)|(\\|)");
         // printIter(cmds);
-        printIter(pipes);
+        // printIter(pipes);
 
         vector<int *> pfds(cmds.size());
         for(int* &pfd: pfds){
@@ -62,8 +62,12 @@ int main() {
                     if (pipe(pfd) < 0)
                         return -1;
                 }
-                cout<<pfd[0]<<endl;
-                cout<<pfd[1]<<endl;
+
+                for (auto number_pfd : number_pfds){
+                    if(number_pfd.first == 0){
+                        close(number_pfd.second[1]);
+                    }
+                }
 
                 pid = fork();
                 if (pid < 0) {
@@ -135,11 +139,11 @@ int main() {
                     }
                     else if(i < pipes.size() && pipes[i].str().size() > 1 && pipes[i].str()[0] == '|'){
                         // close(pfd[1]);
-                        number_pfds.insert(pair<int, int*>(round, pfd));
+                        number_pfds[round] = pfd;
                     }
                     else if(i < pipes.size() && pipes[i].str().size() > 1 && pipes[i].str()[0] == '!'){
                         // close(pfd[1]);
-                        number_pfds.insert(pair<int, int*>(round, pfd));
+                        number_pfds[round] = pfd;
                     }
                     else{
                         close(pfds[i-1][0]);
@@ -148,12 +152,12 @@ int main() {
                     number_pfds.erase(0);
                     map<int, int*> tmp(number_pfds);
 
+                    number_pfds.clear();
                     for (auto number_pfd : tmp){
-                        number_pfds.erase(number_pfd.first);
                         number_pfds.insert(pair<int, int*>(number_pfd.first - 1, number_pfd.second));
                     }
 
-                    printIter(number_pfds);
+                    // printIter(number_pfds);
                 }
             }
         }
