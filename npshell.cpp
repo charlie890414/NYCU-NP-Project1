@@ -6,6 +6,7 @@
 #include <map>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include "lib/stringUtil.h"
 #include "lib/systemUtil.h"
@@ -64,6 +65,14 @@ int main() {
                         dup2(pfds[i][1], STDOUT_FILENO);
                         dup2(pfds[i-1][0], STDIN_FILENO);
                         close(pfds[i-1][1]);
+                    }
+
+                    vector<string>::iterator iter = find(cmd.begin(), cmd.end(), ">");
+                    if(iter != cmd.cend()){
+                        string filename = cmd[distance(cmd.begin(), iter) + 1];
+                        int outfile = open(filename.c_str(), O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR);
+                        dup2(outfile, STDOUT_FILENO);
+                        cmd = vector<string>(cmd.begin(), iter);
                     }
 
                     execute(cmd);
