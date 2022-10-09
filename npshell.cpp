@@ -19,7 +19,7 @@ int main() {
         // printIter(cmds);
         // printIter(pipes);
 
-        vector<int[2]> pfds(1);
+        vector<int[2]> pfds(cmds.size());
         for(int* pfd: pfds)
             if (pipe(pfd) < 0)
                 return -1;
@@ -45,11 +45,17 @@ int main() {
                     return 0;
                 } else if (pid == 0) {
                     /* child process */
-                    if (i != pipes.size()){
+                    if (i == 0){
                         close(pfds[i][0]);
                         dup2(pfds[i][1], STDOUT_FILENO);
                     }
-                    if (i != 0){
+                    else if(i == cmds.size()-1){
+                        dup2(pfds[i-1][0], STDIN_FILENO);
+                        close(pfds[i-1][1]);
+                    }
+                    else{
+                        close(pfds[i][0]);
+                        dup2(pfds[i][1], STDOUT_FILENO);
                         dup2(pfds[i-1][0], STDIN_FILENO);
                         close(pfds[i-1][1]);
                     }
@@ -61,10 +67,14 @@ int main() {
                         waitpid(pid, &status, 0);
                     
                     // not sure but work
-                    if (i != pipes.size()){
+                    if (i == 0){
                         close(pfds[i][1]);
                     }
-                    if (i != 0){
+                    else if(i == cmds.size()-1){
+                        close(pfds[i-1][0]);
+                    }
+                    else{
+                        close(pfds[i][1]);
                         close(pfds[i-1][0]);
                     }
                 }
