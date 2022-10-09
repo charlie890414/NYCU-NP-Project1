@@ -15,3 +15,10 @@ void printIter(vector<smatch> iter)
         cout << i.str() << " ";
     cout << endl;
 }
+
+void printIter(map<int, int*> iter)
+{
+    for (auto i : iter)
+        cout << i.first << " ";
+    cout << endl;
+}

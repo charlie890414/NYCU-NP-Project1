@@ -42,3 +42,11 @@ def test_removetag0():
 
 def test_removetag0_redirect():
     check_output('bin/removetag0 test.html > test2.txt\ncat test2.txt', None, "test2.txt")
+
+def test_pipe():
+    check_output("ls | cat", None)
+
+# need to setup env before test
+def test_many_pipe():
+    check_output("ls" + " | bin/number" * 1000, None)
+
