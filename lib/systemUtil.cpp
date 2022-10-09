@@ -9,6 +9,27 @@ void setenv(string var, string value)
     envp.insert(pair<string, string>(var, value));
 }
 
+#if !__linux__
+extern char **environ;
+
+void clearenv() {
+  vector<string> data;
+  for (auto it = environ; it && *it; ++it) {
+    string entry(*it);
+    auto equalsPosition = entry.find('=');
+    if (equalsPosition == string::npos || equalsPosition == 0) {
+      continue;
+    } else {
+      data.emplace_back(entry.substr(0, equalsPosition));
+    }
+  }
+
+  for (auto s : data) {
+    unsetenv(s.c_str());
+  }
+}
+#endif
+
 void printenv(string var)
 {
     if (envp.contains(var))

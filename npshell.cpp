@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include <regex>
 #include <map>
 #include <unistd.h>
@@ -19,17 +20,20 @@ int main() {
         // printIter(cmds);
         // printIter(pipes);
 
-        vector<int[2]> pfds(cmds.size());
-        for(int* pfd: pfds)
+        vector<int *> pfds(cmds.size());
+        for(int* &pfd: pfds){
+            pfd = new int[2];
             if (pipe(pfd) < 0)
                 return -1;
+        }
 
         for (int i = 0; i < cmds.size(); i++) {
             string cmdStr = cmds[i];
             vector < string > cmd = splitStr(cmdStr, "\\s+");
             // printIter(cmd);
-
-            if (cmd[0] == "exit")
+            if (cmd[0] == "")
+                continue;
+            else if (cmd[0] == "exit")
                 exit();
             else if (cmd[0] == "setenv")
                 setenv(cmd[1], cmd[2]);
@@ -46,8 +50,10 @@ int main() {
                 } else if (pid == 0) {
                     /* child process */
                     if (i == 0){
-                        close(pfds[i][0]);
-                        dup2(pfds[i][1], STDOUT_FILENO);
+                        if(i != cmds.size()-1){
+                            close(pfds[i][0]);
+                            dup2(pfds[i][1], STDOUT_FILENO);
+                        }
                     }
                     else if(i == cmds.size()-1){
                         dup2(pfds[i-1][0], STDIN_FILENO);
@@ -68,7 +74,9 @@ int main() {
                     
                     // not sure but work
                     if (i == 0){
-                        close(pfds[i][1]);
+                        if(i != cmds.size()-1){
+                            close(pfds[i][1]);
+                        }
                     }
                     else if(i == cmds.size()-1){
                         close(pfds[i-1][0]);

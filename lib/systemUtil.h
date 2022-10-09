@@ -9,6 +9,10 @@ using namespace std;
 
 void setenv(string var, string value);
 
+#if !__linux__
+void clearenv();
+#endif
+
 void printenv(string var);
 
 istream& getCommand(string &cmdStr);
