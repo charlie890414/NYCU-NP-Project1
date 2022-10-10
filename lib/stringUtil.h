@@ -10,8 +10,8 @@ void trimRight(string &str,
 void trimLeft(string &str,
               const string &trimChars);
 
-void trim(string &str, const string &trimChars);
+string trim(string &str, const string &trimChars);
 
-vector<smatch> matchStr(string str, string matcher);
+vector<string> matchStr(string str, string matcher);
 
 vector<string> splitStr(string str, string delimiter);

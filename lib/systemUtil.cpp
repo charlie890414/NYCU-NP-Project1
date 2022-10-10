@@ -77,3 +77,14 @@ void exit()
 {
     exit(0);
 }
+
+void countdown(map<int, int*> &number_pfds)
+{
+    number_pfds.erase(0);
+    map<int, int*> tmp(number_pfds);
+
+    number_pfds.clear();
+    for (auto tmp_number_pfd : tmp){
+        number_pfds.insert(pair<int, int*>(tmp_number_pfd.first - 1, tmp_number_pfd.second));
+    }
+}

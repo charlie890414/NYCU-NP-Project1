@@ -9,13 +9,6 @@ void printIter(vector<string> iter)
     cout << endl;
 }
 
-void printIter(vector<smatch> iter)
-{
-    for (auto i : iter)
-        cout << i.str() << " ";
-    cout << endl;
-}
-
 void printIter(map<int, int*> iter)
 {
     for (auto i : iter)

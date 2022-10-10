@@ -20,3 +20,5 @@ istream& getCommand(string &cmdStr);
 void execute(vector<string> cmd);
 
 void exit();
+
+void countdown(map<int, int*> &number_pfds);
