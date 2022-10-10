@@ -48,7 +48,13 @@ def test_pipe():
 
 # maybe need to setup env before test
 def test_many_pipe():
-    check_output("ls" + " | bin/number" * 1000, None)
+    check_output("ls bin" + " | bin/number" * 1000, open("test/many_pipe_ans.txt").read())
+
+def test_large_file1():
+    check_output("cat test/large1.txt | bin/number", None)
+
+def test_large_file2():
+    check_output("cat test/large2.txt | bin/number", None)
 
 def test_number_pipe1():
     check_output("bin/removetag test.html |2\nbin/removetag test.html |1\nbin/number", "   1 \n   2 Test\n   3 This is a test program\n   4 for ras.\n   5 \n   6 \n   7 Test\n   8 This is a test program\n   9 for ras.\n  10 ")
