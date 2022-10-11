@@ -22,16 +22,19 @@ map<pid_t, int *> holding_pfds;
 
 void recycle()
 {
-    for (pair<pid_t, int *> pfds : holding_pfds)
+    map<int, int*> shadow(holding_pfds);
+    for (pair<pid_t, int *> shadow_pfds : shadow)
     {
-        pid_t pid = pfds.first;
+        pid_t pid = shadow_pfds.first;
         int status;
         waitpid(pid, &status, WNOHANG);
         if (WIFEXITED(status))
         {
             free_pfds.emplace_back(holding_pfds[pid]);
+            holding_pfds.erase(pid);
         }
     }
+
 }
 
 int main()

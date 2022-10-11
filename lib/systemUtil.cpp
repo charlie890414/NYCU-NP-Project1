@@ -80,10 +80,10 @@ void exit()
 
 void countdown(map<int, int*> &number_pfds)
 {
-    map<int, int*> tmp(number_pfds);
+    map<int, int*> shadow(number_pfds);
 
     number_pfds.clear();
-    for (auto tmp_number_pfd : tmp){
-        number_pfds.insert(pair<int, int*>(tmp_number_pfd.first - 1, tmp_number_pfd.second));
+    for (auto shadow_number_pfd : shadow){
+        number_pfds.insert(pair<int, int*>(shadow_number_pfd.first - 1, shadow_number_pfd.second));
     }
 }
