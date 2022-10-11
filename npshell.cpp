@@ -106,11 +106,19 @@ int main() {
                     else if(i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '|'){
                         close(number_pfd[0]);
                         dup2(number_pfd[1], STDOUT_FILENO);
+                        if(i > 0 && pipes[i-1] == "|"){
+                            dup2(pfds[i-1][0], STDIN_FILENO);
+                            close(pfds[i-1][1]);
+                        }
                     }
                     else if(i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '!'){
                         close(number_pfd[0]);
                         dup2(number_pfd[1], STDOUT_FILENO);
                         dup2(number_pfd[1], STDERR_FILENO);
+                        if(i > 0 && pipes[i-1] == "|"){
+                            dup2(pfds[i-1][0], STDIN_FILENO);
+                            close(pfds[i-1][1]);
+                        }
                     }
                     else if(!START_OF_CMD){
                         dup2(pfds[i-1][0], STDIN_FILENO);
@@ -147,14 +155,18 @@ int main() {
                         }
                     }
                     else if(i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '|'){
-                        // close(pfd[1]);
+                        if(i > 0 && pipes[i-1] == "|"){
+                            close(pfds[i-1][0]);
+                        }
                         number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
                         is_countdown = true;
                     }
                     else if(i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '!'){
-                        // close(pfd[1]);
+                        if(i > 0 && pipes[i-1] == "|"){
+                            close(pfds[i-1][0]);
+                        }
                         number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
@@ -168,11 +180,11 @@ int main() {
         }
         if(!is_countdown)
             countdown(number_pfds);
-        if(pid_list.size() > 0){
+        if(pid_list.size() > 0 && pipes.size() < cmds.size() ){
             int status;
             waitpid(pid_list[pid_list.size()-1], &status, 0);
         }
-        printIter(number_pfds);
+        // printIter(number_pfds);
     }
     return 0;
 }
