@@ -75,9 +75,9 @@ int main()
 
             if (i < pipes.size())
             {
-                if (free_pfds.empty())
+                while (free_pfds.empty())
                 {
-                    usleep(1000 * 1000);
+                    usleep(1000);
                     recycle();
                 }
                 pfds[i] = free_pfds.front();
@@ -109,9 +109,9 @@ int main()
                     }
                     else
                     {
-                        if (free_pfds.empty())
+                        while (free_pfds.empty())
                         {
-                            usleep(1000 * 1000);
+                            usleep(1000);
                             recycle();
                         }
                         number_pfd = free_pfds.front();
@@ -126,11 +126,11 @@ int main()
                 }
 
                 pid = fork();
-                if (pid < 0)
+                while (pid < 0)
                 {
                     /* fork error */
-                    cout << strerror(errno) << endl;
-                    usleep(1000 * 1000);
+                    // cout << strerror(errno) << endl;
+                    usleep(1000);
                     waitpid(-1, &status, 0);
                     pid = fork();
                 }
