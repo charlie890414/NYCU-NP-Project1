@@ -80,7 +80,6 @@ void exit()
 
 void countdown(map<int, int*> &number_pfds)
 {
-    number_pfds.erase(0);
     map<int, int*> tmp(number_pfds);
 
     number_pfds.clear();
