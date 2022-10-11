@@ -20,12 +20,15 @@ using namespace std;
 list<int *> free_pfds;
 map<pid_t, int *> holding_pfds;
 
-void recycle(){
-    for(pair<pid_t, int*> pfds: holding_pfds){
+void recycle()
+{
+    for (pair<pid_t, int *> pfds : holding_pfds)
+    {
         pid_t pid = pfds.first;
         int status;
         waitpid(pid, &status, WNOHANG);
-        if(WIFEXITED(status)){
+        if (WIFEXITED(status))
+        {
             free_pfds.emplace_back(holding_pfds[pid]);
         }
     }
@@ -72,10 +75,10 @@ int main()
 
             if (i < pipes.size())
             {
-                while (free_pfds.empty())
+                if (free_pfds.empty())
                 {
+                    usleep(1000 * 1000);
                     recycle();
-                    usleep(1000);
                 }
                 pfds[i] = free_pfds.front();
                 free_pfds.pop_front();
@@ -106,10 +109,10 @@ int main()
                     }
                     else
                     {
-                        while (free_pfds.empty())
+                        if (free_pfds.empty())
                         {
+                            usleep(1000 * 1000);
                             recycle();
-                            usleep(1000);
                         }
                         number_pfd = free_pfds.front();
                         free_pfds.pop_front();
@@ -123,10 +126,13 @@ int main()
                 }
 
                 pid = fork();
-                while (pid < 0)
+                if (pid < 0)
                 {
                     /* fork error */
                     cout << strerror(errno) << endl;
+                    usleep(1000 * 1000);
+                    waitpid(-1, &status, 0);
+                    pid = fork();
                 }
 
                 if (pid == 0)
