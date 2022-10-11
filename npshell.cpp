@@ -130,7 +130,7 @@ int main()
                 {
                     /* fork error */
                     // cout << strerror(errno) << endl;
-                    usleep(1000);
+                    usleep(1000 * 1000);
                     waitpid(-1, &status, 0);
                     pid = fork();
                 }
