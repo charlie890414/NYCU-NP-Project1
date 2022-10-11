@@ -266,5 +266,6 @@ int main()
         }
         // printIter(number_pfds);
     }
+    waitpid(-1, &status, 0);
     return 0;
 }
