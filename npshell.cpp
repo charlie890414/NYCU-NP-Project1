@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <errno.h>
 
 #include "lib/stringUtil.h"
 #include "lib/systemUtil.h"
@@ -28,8 +29,10 @@ int main() {
         vector<int *> pfds(pipes.size());
         for(int* &pfd: pfds){
             pfd = new int[2];
-            if (pipe(pfd) < 0)
+            if (pipe(pfd) < 0){
+                cout<<strerror(errno)<<endl;
                 return -1;
+            }
         }
 
         vector<int> pid_list;
@@ -65,8 +68,10 @@ int main() {
                     number_pfd = number_pfds[round];
                 } else {
                     number_pfd = new int[2];
-                    if (pipe(number_pfd) < 0)
+                    if (pipe(number_pfd) < 0){
+                        cout<<strerror(errno)<<endl;
                         return -1;
+                    }
                 }
 
                 if(number_pfds.contains(0)){
@@ -79,7 +84,7 @@ int main() {
                 pid = fork();
                 while (pid < 0) {
                     /* fork error */
-                    return 0;
+                    cout<<strerror(errno)<<endl;
                 } 
                 if (pid == 0) {
                     if(number_pfds.contains(0)){
