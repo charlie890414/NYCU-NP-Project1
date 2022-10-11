@@ -32,13 +32,17 @@ int main() {
                 return -1;
         }
 
+        vector<int> pid_list;
+        bool is_countdown = false;
         for (int i = 0; i < cmds.size(); i++) {
             string cmdStr = cmds[i];
             vector < string > cmd = splitStr(cmdStr, "\\s+");
             // printIter(cmd);
 
-            if (cmd[0] == "")
+            if (cmd[0] == ""){
+                is_countdown = true;
                 continue;
+            }
             else if (cmd[0] == "exit")
                 exit();
             else if (cmd[0] == "setenv")
@@ -47,7 +51,6 @@ int main() {
                 printenv(cmd[1]);
             else {
                 pid_t pid;
-                int status;
 
                 int round = -1;
                 if (i < pipes.size() && pipes[i].size() > 1){
@@ -74,10 +77,11 @@ int main() {
                 // cout<<number_pfd[1]<<endl;
 
                 pid = fork();
-                if (pid < 0) {
+                while (pid < 0) {
                     /* fork error */
                     return 0;
-                } else if (pid == 0) {
+                } 
+                if (pid == 0) {
                     if(number_pfds.contains(0)){
                         dup2(number_pfds[0][0], STDIN_FILENO);
                         close(number_pfds[0][1]);
@@ -116,7 +120,7 @@ int main() {
                     vector<string>::iterator iter = find(cmd.begin(), cmd.end(), ">");
                     if(iter != cmd.cend()){
                         string filename = cmd[distance(cmd.begin(), iter) + 1];
-                        int outfile = open(filename.c_str(), O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR);
+                        int outfile = open(filename.c_str(), O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR);
                         dup2(outfile, STDOUT_FILENO);
                         cmd = vector<string>(cmd.begin(), iter);
                     }
@@ -124,10 +128,10 @@ int main() {
                     execute(cmd);
                 } else {
                     /* parent process */
+                    is_countdown = false;
                     number_pfds.erase(0);
 
-                    if(i == cmds.size() - 1)
-                        waitpid(pid, &status, 0);
+                    pid_list.emplace_back(pid);
                     
                     if (pipes.size() == 0) {
                         // nothing to do
@@ -147,21 +151,28 @@ int main() {
                         number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
+                        is_countdown = true;
                     }
                     else if(i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '!'){
                         // close(pfd[1]);
                         number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
+                        is_countdown = true;
                     }
                     else if(!START_OF_CMD){
                         close(pfds[i-1][0]);
-                    }
-                    
-                    // printIter(number_pfds);
+                    }                    
                 }
             }
         }
+        if(!is_countdown)
+            countdown(number_pfds);
+        if(pid_list.size() > 0){
+            int status;
+            waitpid(pid_list[pid_list.size()-1], &status, 0);
+        }
+        printIter(number_pfds);
     }
     return 0;
 }

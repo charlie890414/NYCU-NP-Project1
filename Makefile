@@ -10,6 +10,7 @@ npshell: npshell.cpp ${OBJFILES}
 %.o: %.cpp %.h                      
 	${CC} ${CFLAGS} -c $< -o $@
 
+.PHONY: command
 command:
 	mkdir -p bin
 	$(foreach file, $(wildcard command/*.cpp), g++ $(file) -o bin/$(basename $(notdir $(file))) -std=c++2a;)

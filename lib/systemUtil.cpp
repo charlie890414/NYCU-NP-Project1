@@ -38,11 +38,11 @@ void printenv(string var)
 
 istream& getCommand(string &cmdStr)
 {
-    if (isatty(fileno(stdin)))
-        cout << "% ";
+    // if (isatty(fileno(stdin)))
+    cout << "% ";
     istream& ret = getline(cin, cmdStr);
-    if (isatty(fileno(stdin)) && !ret)
-        cout << endl;
+    // if (isatty(fileno(stdin)) && !ret)
+    //     cout << endl;
     return ret;
 }
 
