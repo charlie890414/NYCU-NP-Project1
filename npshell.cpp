@@ -127,18 +127,9 @@ int main()
                     close(number_pfds[0][1]);
                 }
 
-                while (holding_pfds.size() > 500)
+                while ((pid = fork()) < 0)
                 {
-                    usleep(1000);
-                    recycle();
-                }
-
-                pid = fork();
-                if (pid < 0)
-                {
-                    /* fork error */
-                    cout << strerror(errno) << endl;
-                    return -1;
+                    waitpid(-1, NULL, 0);
                 }
 
                 if (pid == 0)
