@@ -22,7 +22,7 @@ map<pid_t, int *> holding_pfds;
 
 void recycle()
 {
-    map<int, int*> shadow(holding_pfds);
+    map<int, int *> shadow(holding_pfds);
     for (pair<pid_t, int *> shadow_pfds : shadow)
     {
         pid_t pid = shadow_pfds.first;
@@ -34,7 +34,6 @@ void recycle()
             holding_pfds.erase(pid);
         }
     }
-
 }
 
 int main()
@@ -128,7 +127,8 @@ int main()
                     close(number_pfds[0][1]);
                 }
 
-                while(holding_pfds.size() > 500){
+                while (holding_pfds.size() > 500)
+                {
                     usleep(1000);
                     recycle();
                 }
@@ -271,6 +271,10 @@ int main()
             waitpid(pid_list[pid_list.size() - 1], &status, 0);
         }
         // printIter(number_pfds);
+    }
+    for (int *pfd : free_pfds)
+    {
+        delete pfd;
     }
     waitpid(-1, &status, 0);
     return 0;
