@@ -210,5 +210,7 @@ int main()
         }
         // printIter(number_pfds);
     }
+    cleanup();
+    while (wait(NULL) > 0);
     return 0;
 }

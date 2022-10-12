@@ -149,3 +149,11 @@ void countdown(map<int, int *> &number_pfds)
         number_pfds.insert(pair<int, int *>(shadow_number_pfd.first - 1, shadow_number_pfd.second));
     }
 }
+
+void cleanup()
+{
+    for (int *pfd : free_pfds)
+    {
+        delete pfd;
+    }
+}

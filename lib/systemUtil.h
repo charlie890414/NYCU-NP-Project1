@@ -32,3 +32,5 @@ void hold_pfds(pid_t pid, int *pfds);
 void recycle_holding_pfds();
 
 void countdown(map<int, int *> &number_pfds);
+
+void cleanup();
