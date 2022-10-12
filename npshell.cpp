@@ -14,18 +14,17 @@ int main()
 
     map<int, int *> number_pfds;
     map<int, int *> pfds;
-    init_free_pfds();
 
     while (getCommand(cmdsStr))
     {
         bool START_OF_CMD = true;
+        bool IS_COUNTDOWN = false;
         vector<string> cmds = splitStr(cmdsStr, "\\s+(\\!\\d+)|(\\|\\d+)|(\\|)\\s+");
         vector<string> pipes = matchStr(cmdsStr, "(\\!\\d+)|(\\|\\d+)|(\\|)");
         // printIter(cmds);
         // printIter(pipes);
 
-        vector<int> pid_list;
-        bool IS_COUNTDOWN = false;
+        pid_t last_pid;
         for (int i = 0; i < cmds.size(); i++)
         {
             string cmdStr = cmds[i];
@@ -45,7 +44,6 @@ int main()
                 printenv(cmd[1]);
             else
             {
-                pid_t pid;
                 int round = -1;
 
                 // need pipe
@@ -67,19 +65,19 @@ int main()
                     }
                 }
 
-                // don't know yet
+                // don't know but work
                 if (number_pfds.contains(0))
                 {
                     close(number_pfds[0][1]);
                 }
 
-                while ((pid = fork()) < 0)
+                while ((last_pid = fork()) < 0)
                 {
                     // wait for any child process.
                     waitpid(-1, NULL, 0);
                 }
 
-                if (pid == 0)
+                if (last_pid == 0)
                 {
                     /* child process */
                     if (number_pfds.contains(0))
@@ -148,13 +146,13 @@ int main()
                 else
                 {
                     /* parent process */
-
-                    hold_pfds(pid, pfds[i]);
                     IS_COUNTDOWN = false;
-                    number_pfds.erase(0);
-                    pfds.erase(i - 2);
 
-                    pid_list.emplace_back(pid);
+                    // cleanup
+                    if(number_pfds.contains(0)){
+                        delete number_pfds[0];
+                        number_pfds.erase(0);
+                    }
 
                     if (pipes.size() == 0)
                     {
@@ -204,13 +202,19 @@ int main()
             countdown(number_pfds);
 
         // only wait cmd which need to show output
-        if (pid_list.size() > 0 && pipes.size() < cmds.size())
+        if (pipes.size() < cmds.size())
         {
-            waitpid(pid_list[pid_list.size() - 1], NULL, 0);
+            waitpid(last_pid, NULL, 0);
         }
+
+        // cleanup
+        for(auto& [_, pfd]: pfds){
+            delete pfd;
+        }
+        pfds.clear();
         // printIter(number_pfds);
     }
-    cleanup();
+    // wait all child exit
     while (wait(NULL) > 0);
     return 0;
 }

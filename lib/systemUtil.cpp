@@ -88,59 +88,15 @@ void exit()
     exit(0);
 }
 
-list<int *> free_pfds;
-map<pid_t, int *> holding_pfds;
-
-void init_free_pfds()
-{
-    // create total pfds
-    for (int i = 0; i < 500; i++)
-    {
-        int *pfd = new int[2];
-        if (pipe(pfd) < 0)
-        {
-            cout << strerror(errno) << endl;
-            return;
-        }
-        free_pfds.emplace_back(pfd);
-    }
-}
-
 int *get_free_pfds()
 {
-    // while (free_pfds.empty())
-    // {
-    //     cout<<"get pfds "<<free_pfds.size()<<endl;
-    //     recycle_holding_pfds();
-    // }
-    // int *ret = free_pfds.front();
-    // free_pfds.pop_front();
     int *pfd = new int[2];
     if (pipe(pfd) < 0)
     {
         cout << strerror(errno) << endl;
+        exit(-1);
     }
     return pfd;
-}
-
-void hold_pfds(pid_t pid, int *pfds)
-{
-    holding_pfds[pid] = pfds;
-}
-
-void recycle_holding_pfds()
-{
-    map<pid_t, int *> shadow(holding_pfds);
-    for (auto shadow_pfds : shadow)
-    {
-        int status;
-        waitpid(shadow_pfds.first, &status, WNOHANG);
-        if (WIFEXITED(status))
-        {
-            free_pfds.emplace_back(shadow[shadow_pfds.first]);
-            holding_pfds.erase(shadow_pfds.first);
-        }
-    }
 }
 
 void countdown(map<int, int *> &number_pfds)
@@ -151,13 +107,5 @@ void countdown(map<int, int *> &number_pfds)
     for (auto shadow_number_pfd : shadow)
     {
         number_pfds.insert(pair<int, int *>(shadow_number_pfd.first - 1, shadow_number_pfd.second));
-    }
-}
-
-void cleanup()
-{
-    for (int *pfd : free_pfds)
-    {
-        delete pfd;
     }
 }
