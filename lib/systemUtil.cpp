@@ -108,15 +108,19 @@ void init_free_pfds()
 
 int *get_free_pfds()
 {
-    while (free_pfds.empty())
+    // while (free_pfds.empty())
+    // {
+    //     cout<<"get pfds "<<free_pfds.size()<<endl;
+    //     recycle_holding_pfds();
+    // }
+    // int *ret = free_pfds.front();
+    // free_pfds.pop_front();
+    int *pfd = new int[2];
+    if (pipe(pfd) < 0)
     {
-        // wait for any child process.
-        waitpid(-1, NULL, 0);
-        recycle_holding_pfds();
+        cout << strerror(errno) << endl;
     }
-    int *ret = free_pfds.front();
-    free_pfds.pop_front();
-    return ret;
+    return pfd;
 }
 
 void hold_pfds(pid_t pid, int *pfds)
