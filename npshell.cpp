@@ -1,15 +1,6 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <array>
-#include <regex>
-#include <map>
-#include <list>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <algorithm>
-#include <errno.h>
 
 #include "lib/stringUtil.h"
 #include "lib/systemUtil.h"
@@ -17,48 +8,14 @@
 
 using namespace std;
 
-list<int *> free_pfds;
-map<pid_t, int *> holding_pfds;
-
-void recycle()
-{
-    map<int, int *> shadow(holding_pfds);
-    for (pair<pid_t, int *> shadow_pfds : shadow)
-    {
-        pid_t pid = shadow_pfds.first;
-        int status;
-        waitpid(pid, &status, WNOHANG);
-        if (WIFEXITED(status))
-        {
-            free_pfds.emplace_back(holding_pfds[pid]);
-            holding_pfds.erase(pid);
-        }
-    }
-}
-
 int main()
 {
     string cmdsStr;
 
-    // create total pfds first
-    for (int i = 0; i < 500; i++)
-    {
-        int *pfd = new int[2];
-        if (pipe(pfd) < 0)
-        {
-            cout << strerror(errno) << endl;
-            return -1;
-        }
-        free_pfds.emplace_back(pfd);
-    }
-
     map<int, int *> number_pfds;
     map<int, int *> pfds;
-    pid_t pid;
+    init_free_pfds();
 
-    int round = -1;
-    int status;
-    int *number_pfd;
     while (getCommand(cmdsStr))
     {
         bool START_OF_CMD = true;
@@ -68,27 +25,16 @@ int main()
         // printIter(pipes);
 
         vector<int> pid_list;
-        bool is_countdown = false;
+        bool IS_COUNTDOWN = false;
         for (int i = 0; i < cmds.size(); i++)
         {
             string cmdStr = cmds[i];
             vector<string> cmd = splitStr(cmdStr, "\\s+");
             // printIter(cmd);
 
-            if (i < pipes.size())
-            {
-                while (free_pfds.empty())
-                {
-                    usleep(1000);
-                    recycle();
-                }
-                pfds[i] = free_pfds.front();
-                free_pfds.pop_front();
-            }
-
             if (cmd[0] == "")
             {
-                is_countdown = true;
+                IS_COUNTDOWN = true;
                 continue;
             }
             else if (cmd[0] == "exit")
@@ -99,25 +45,25 @@ int main()
                 printenv(cmd[1]);
             else
             {
+                pid_t pid;
+                int round = -1;
+
+                // need pipe
+                if (i < pipes.size() && pipes[i].size() == 1)
+                {
+                    pfds[i] = get_free_pfds();
+                }
+
+                // need number pipe
                 if (i < pipes.size() && pipes[i].size() > 1)
                 {
                     string pipper = pipes[i];
                     round = stoi(pipper.substr(1, pipper.size() - 1));
 
-                    // old fd or prepare new fd
-                    if (number_pfds.contains(round))
+                    // prepare new fd
+                    if (!number_pfds.contains(round))
                     {
-                        number_pfd = number_pfds[round];
-                    }
-                    else
-                    {
-                        while (free_pfds.empty())
-                        {
-                            usleep(1000);
-                            recycle();
-                        }
-                        number_pfd = free_pfds.front();
-                        free_pfds.pop_front();
+                        number_pfds[round] = get_free_pfds();
                     }
                 }
 
@@ -129,18 +75,19 @@ int main()
 
                 while ((pid = fork()) < 0)
                 {
+                    // wait for any child process.
                     waitpid(-1, NULL, 0);
                 }
 
                 if (pid == 0)
                 {
+                    /* child process */
                     if (number_pfds.contains(0))
                     {
                         dup2(number_pfds[0][0], STDIN_FILENO);
                         close(number_pfds[0][1]);
                     }
 
-                    /* child process */
                     if (pipes.size() == 0)
                     {
                         // nothing to do
@@ -162,8 +109,8 @@ int main()
                     }
                     else if (i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '|')
                     {
-                        close(number_pfd[0]);
-                        dup2(number_pfd[1], STDOUT_FILENO);
+                        close(number_pfds[round][0]);
+                        dup2(number_pfds[round][1], STDOUT_FILENO);
                         if (i > 0 && pipes[i - 1] == "|")
                         {
                             dup2(pfds[i - 1][0], STDIN_FILENO);
@@ -172,9 +119,9 @@ int main()
                     }
                     else if (i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '!')
                     {
-                        close(number_pfd[0]);
-                        dup2(number_pfd[1], STDOUT_FILENO);
-                        dup2(number_pfd[1], STDERR_FILENO);
+                        close(number_pfds[round][0]);
+                        dup2(number_pfds[round][1], STDOUT_FILENO);
+                        dup2(number_pfds[round][1], STDERR_FILENO);
                         if (i > 0 && pipes[i - 1] == "|")
                         {
                             dup2(pfds[i - 1][0], STDIN_FILENO);
@@ -201,9 +148,11 @@ int main()
                 else
                 {
                     /* parent process */
-                    holding_pfds[pid] = pfds[i];
-                    is_countdown = false;
+
+                    hold_pfds(pid, pfds[i]);
+                    IS_COUNTDOWN = false;
                     number_pfds.erase(0);
+                    pfds.erase(i - 2);
 
                     pid_list.emplace_back(pid);
 
@@ -230,10 +179,9 @@ int main()
                         {
                             close(pfds[i - 1][0]);
                         }
-                        number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
-                        is_countdown = true;
+                        IS_COUNTDOWN = true;
                     }
                     else if (i < pipes.size() && pipes[i].size() > 1 && pipes[i][0] == '!')
                     {
@@ -241,10 +189,9 @@ int main()
                         {
                             close(pfds[i - 1][0]);
                         }
-                        number_pfds[round] = number_pfd;
                         countdown(number_pfds);
                         START_OF_CMD = true;
-                        is_countdown = true;
+                        IS_COUNTDOWN = true;
                     }
                     else if (!START_OF_CMD)
                     {
@@ -253,20 +200,15 @@ int main()
                 }
             }
         }
-        if (!is_countdown)
+        if (!IS_COUNTDOWN)
             countdown(number_pfds);
 
-        // only wait to show output
+        // only wait cmd which need to show output
         if (pid_list.size() > 0 && pipes.size() < cmds.size())
         {
-            waitpid(pid_list[pid_list.size() - 1], &status, 0);
+            waitpid(pid_list[pid_list.size() - 1], NULL, 0);
         }
         // printIter(number_pfds);
     }
-    for (int *pfd : free_pfds)
-    {
-        delete pfd;
-    }
-    waitpid(-1, &status, 0);
     return 0;
 }

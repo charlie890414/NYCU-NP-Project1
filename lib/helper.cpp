@@ -9,7 +9,7 @@ void printIter(vector<string> iter)
     cout << endl;
 }
 
-void printIter(map<int, int*> iter)
+void printIter(map<int, int *> iter)
 {
     for (auto i : iter)
         cout << i.first << " ";
