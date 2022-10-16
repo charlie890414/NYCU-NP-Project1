@@ -30,13 +30,8 @@ int main()
             string cmdStr = cmds[i];
             vector<string> cmd = splitStr(cmdStr, "\\s+");
             // printIter(cmd);
-
-            if (cmd[0] == "")
-            {
-                IS_COUNTDOWN = true;
-                continue;
-            }
-            else if (cmd[0] == "exit")
+            
+            if (cmd[0] == "exit")
                 exit();
             else if (cmd[0] == "setenv")
                 setenv(cmd[1], cmd[2]);

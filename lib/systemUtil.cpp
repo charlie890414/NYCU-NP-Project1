@@ -47,6 +47,7 @@ istream &getCommand(string &cmdStr)
     // if (isatty(fileno(stdin)))
     cout << "% ";
     istream &ret = getline(cin, cmdStr);
+    while(cmdStr.empty() && ret) return getCommand(cmdStr);
     // if (isatty(fileno(stdin)) && !ret)
     //     cout << endl;
     return ret;
