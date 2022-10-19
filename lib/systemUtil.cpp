@@ -110,3 +110,14 @@ void countdown(map<int, int *> &number_pfds)
         number_pfds.insert(pair<int, int *>(shadow_number_pfd.first - 1, shadow_number_pfd.second));
     }
 }
+
+void countdown(map<int, pid_t> &number_pids)
+{
+    map<int, pid_t> shadow(number_pids);
+
+    number_pids.clear();
+    for (auto shadow_number_pid : shadow)
+    {
+        number_pids.insert(pair<int, pid_t>(shadow_number_pid.first - 1, shadow_number_pid.second));
+    }
+}
