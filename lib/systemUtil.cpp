@@ -84,11 +84,6 @@ void execute(vector<string> cmd)
     }
 }
 
-void exit()
-{
-    exit(0);
-}
-
 int *get_free_pfds()
 {
     int *pfd = new int[2];

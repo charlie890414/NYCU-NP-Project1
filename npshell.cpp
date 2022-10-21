@@ -34,7 +34,7 @@ int main()
             // printIter(cmd);
 
             if (cmd[0] == "exit")
-                exit();
+                goto exit;
             else if (cmd[0] == "setenv")
                 setenv(cmd[1], cmd[2]);
             else if (cmd[0] == "printenv")
@@ -214,15 +214,15 @@ int main()
             }
         }
 
-        // only wait cmd which need to show output => last cmd has no pipe 
+        // only wait cmd which need to show output => last cmd has no pipe
         // and this will need to countdown here
         if (pipes.size() < cmds.size())
         {
             waitpid(last_pid, NULL, 0);
-            
+
             countdown(number_pfds);
             countdown(number_pids);
-        } 
+        }
 
         // cleanup
         for (auto &[_, pfd] : pfds)
@@ -233,6 +233,7 @@ int main()
         // printIter(number_pfds);
     }
 
+exit:
     // wait all child exit
     while (wait(NULL) > 0);
 

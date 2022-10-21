@@ -21,8 +21,6 @@ istream &getCommand(string &cmdStr);
 
 void execute(vector<string> cmd);
 
-void exit();
-
 void init_free_pfds();
 
 int *get_free_pfds();
