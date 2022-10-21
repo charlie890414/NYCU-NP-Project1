@@ -13,6 +13,7 @@ using namespace std;
 
 int main()
 {
+    signal(SIGCHLD,SIG_IGN);
     string cmds_str;
 
     map<int, int *> number_pfds;
