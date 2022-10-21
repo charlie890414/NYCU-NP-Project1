@@ -1,5 +1,5 @@
-CC = clang++
-CFLAGS = -O2 -std=c++2a
+CC = g++
+CFLAGS = -O2 -std=c++20
 
 OBJFILES = lib/stringUtil.o lib/systemUtil.o lib/helper.o
 
