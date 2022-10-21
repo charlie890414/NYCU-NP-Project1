@@ -1,5 +1,5 @@
-CC = g++
-CFLAGS = -O3 -std=c++2a
+CC = clang++
+CFLAGS = -O2 -std=c++2a
 
 OBJFILES = lib/stringUtil.o lib/systemUtil.o lib/helper.o
 
@@ -13,7 +13,7 @@ npshell: npshell.cpp ${OBJFILES}
 .PHONY: command
 command:
 	mkdir -p bin
-	$(foreach file, $(wildcard command/*.cpp), g++ $(file) -o bin/$(basename $(notdir $(file))) -std=c++2a;)
+	$(foreach file, $(wildcard command/*.cpp), ${CC} $(file) -o bin/$(basename $(notdir $(file))) ${CFLAGS};)
 	cp /bin/ls /bin/cat bin/
 
 .PHONY: clean
