@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// first cmd or number pipe in front of cmd
 #define START_OF_CMD (i == 0 || (i - 1 < pipes.size() && pipes[i - 1].size() > 1))
 
 int main()
