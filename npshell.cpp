@@ -21,7 +21,7 @@ int main()
     while (getCommand(cmds_str))
     {
         vector<string> cmds = splitStr(cmds_str, "\\s+(\\!\\d+)|(\\|\\d+)|(\\|)\\s+");
-        vector<string> pipes = matchStr(cmds_str, "(\\!\\d+)|(\\|\\d+)|(\\|)");
+        vector<string> pipes = matchStr(cmds_str, "\\s+(\\!\\d+)|(\\|\\d+)|(\\|)\\s+");
         // printIter(cmds);
         // printIter(pipes);
 
